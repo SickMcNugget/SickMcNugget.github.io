@@ -1,0 +1,35 @@
+---
+layout: post
+title:  "nfdump"
+date:   2024-09-10 12:17:00 +08:00
+categories: linux
+published: false
+---
+# NFDUMP
+nfdump is a program that allows the collection of network flows (either sFlow or netflow) from a capable switch. The problem is, I want to use this program on a system that does not have the capability to build the software, and it may be missing the required libraries. This post is here simply to help me build this software.
+
+## Prerequisite - librrd
+For debian, just do:
+```bash
+sudo apt install librrd-dev # Gets the static archive
+```
+
+## Prerequisite - libpcap
+By default, libpcap produces a static archive when building it, so the following commands are all that is needed.
+
+```bash
+git clone https://github.com/the-tcpdump-group/libpcap.git 
+pushd libpcap
+./autogen.sh && ./configure && make && sudo make install
+popd
+```
+
+## nfdump - Still doesnt quite work as of yet
+```bash
+git clone https://github.com/phaag/nfdump.git
+pushd nfdump
+./autogen
+./configure --enable-shared=no --enable-sflow --enable-nfpcapd --enable-nfprofile --enable-nftrack --enable-nsel --enable-maxmind --enable-tor --enable-ja4
+make
+make install
+```

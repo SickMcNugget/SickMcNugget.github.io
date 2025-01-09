@@ -1,0 +1,47 @@
+---
+layout: post
+title:  "The world of CPUs"
+date:   2024-08-18 15:36:35 +08:00
+categories: hardware linux
+published: true
+---
+I've been plagued by questions concerning the function of CPUs recently. I have a rough idea of how a CPU functions, but I'm more interested in the nitty-gritty than some high-level overview. When I'm running code, what happens? I'm not just asking about the generated assembly, I'm asking about how this relates to the physical attributes of a CPU. I want to be able to reason about the size of my L1, L2 and L3 caches when I'm writing code. I want to write code that easily converts into [Single Instruction/Multiple Data][SIMD] (SIMD) instructions where possible. I want to know how different CPU units work, such as the [Memory Management Unit][MMU] (MMU), [Input/Output MMU][IOMMU] (IOMMU), [Floating Point Unit][FPU] (FPU), [Arithmetic Logic Unit][ALU] (ALU) and whatever else there may be. I want to understand instruction set extensions, such as AVX2 and AVX512. I want to understand the overhead of a context switch, and what a no-op really is. I want to understand how many instructions per cycle I should expect a line of code to be capable of. I want to better understand the interchange between the CPU frontend and the CPU backend. Finally, I want to be able to refer back to this page and remind myself of what I have learned.
+
+# The list
+Below is a list of Webpages with short descriptions of how they are helpful and what they show.
+- <https://uops.info/table.html> - Microcode Instruction explorer. Allows you to determine the throughput of a CPU instructions.
+- <https://godbolt.org/> - Compiler explorer. Allows you to see the generated assembly for a code snippet.
+- <https://cpu.land/> - A high-level explanation of what CPUs do
+- [WikiChip][WikiChip] - A website designed specifically to show hardware architectures. Contains block diagrams of CPUs and a rundown of all their features. An amazing site, but it seems to be unreachable without web archive.
+- <https://chipsandcheese.com/p/popping-the-hood-on-golden-cove> - An investigation into Intel's Alder Lake launch
+
+# Using Skylake-era CPUs for research
+Below is a diagram showing the Skylake Microarchitecture for an individual CPU core.
+<image src="/assets/images/skylake_block_diagram.svg"></image><br>
+
+Below is a diagram showing the Sunny Cove Microarchitecture for an individual CPU core. There are some minor differences between this architecture and the Skylake one. It's much easier to see the changes between different generations of processor through comparing these diagrams than trying to work out everything from scratch.
+<image src="/assets/images/sunny_cove_block_diagram.svg"></image><br>
+
+Below is a block diagram showing the System on a Chip (SoC) architecture for a Skylake-series CPU. Instead of showing detail regarding the individual components on a CPU, this is a higher level view of how a CPU is organised.
+<image src="/assets/images/skylake_soc_block_diagram.svg"></image><br>
+
+Below is an image of a Skylake CPU with the physical CPU regions overlayed on top of the image. Note how these regions follow fairly closely to the block diagram shown earlier.
+<image src="/assets/images/skylake_(quad-core)_(annotated).png"></image><br>
+
+For a change in pace, below is an image of an AMD Granite Ridge (Zen 5) CPU, with the physical regions overlayed on top of the image.
+<image src="/assets/images/granite_ridge_(octo-core)_(annotated).jpg"></image><br>
+
+The below image is a cutout from the above image, centered on an individual CPU core.
+<image src="/assets/images/granite_ridge_(annotated).jpg"></image><br>
+
+[SIMD]: http://ftp.cvut.cz/kernel/people/geoff/cell/ps3-linux-docs/CellProgrammingTutorial/BasicsOfSIMDProgramming.html
+[MMU]: https://en.wikipedia.org/wiki/Memory_management_unit
+[IOMMU]: https://en.wikipedia.org/wiki/Input%E2%80%93output_memory_management_unit
+[FPU]: https://en.wikipedia.org/wiki/Floating-point_unit
+[ALU]: https://en.wikipedia.org/wiki/Arithmetic_logic_unit
+
+[WikiChip]: https://web.archive.org/web/20241127230002/https://en.wikichip.org/wiki/WikiChip
+<!-- [Skylake]: https://upload.wikimedia.org/wikipedia/commons/c/c3/Skylake_architecture_diagram.png -->
+[Skylake]: /assets/images/skylake_block_diagram.svg 
+[Skylake-Block]: /assets/images/skylake_soc_block_diagram.svg 
+[Sunnycove]: /assets/images/sunny_cove_block_diagram.svg

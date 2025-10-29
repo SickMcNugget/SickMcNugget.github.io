@@ -14,24 +14,24 @@ Let's start with the 'good' icons. The ones that closely follow Microsoft's curr
 
 You can see the below icons in Outlook when you go to the 'Deleted Items' tab and click 'Recover items deleted from this folder (0 items)' at the top.
 <div>
-  <image src="/assets/images/microsoft_icons/empty-deleted-dark-v2.svg" width="360" height="360"></image>
-  <image src="/assets/images/microsoft_icons/empty-deleted-light-v2.svg" width="360" height="360"></image>
+  <image src="/assets/images/microsoft_icons/outlook_empty-deleted-dark-v2.svg" width="360" height="360"></image>
+  <image src="/assets/images/microsoft_icons/outlook_empty-deleted-light-v2.svg" width="360" height="360"></image>
 </div>
 ---
 <br>
 
 You can see the below icons in Outlook when you go to the 'Drafts' tab, assuming you have no unsent drafts.
 <div>
-  <image src="/assets/images/microsoft_icons/empty-draft-dark-v1.svg" width="360" height="360"></image>
-  <image src="/assets/images/microsoft_icons/empty-draft-light-v1.svg" width="360" height="360"></image>
+  <image src="/assets/images/microsoft_icons/outlook_empty-draft-dark-v1.svg" width="360" height="360"></image>
+  <image src="/assets/images/microsoft_icons/outlook_empty-draft-light-v1.svg" width="360" height="360"></image>
 </div>
 ---
 <br>
 
 You can see the below icons in Outlook in any empty folders you have laying around. Take note of the dots you can see near on the abstract floating sticky notes (more rounded corners, yay).
 <div>
-  <image src="/assets/images/microsoft_icons/empty-folder-dark.svg" width="360" height="360"></image>
-  <image src="/assets/images/microsoft_icons/empty-folder-light.svg" width="360" height="360"></image>
+  <image src="/assets/images/microsoft_icons/outlook_empty-folder-dark.svg" width="360" height="360"></image>
+  <image src="/assets/images/microsoft_icons/outlook_empty-folder-light.svg" width="360" height="360"></image>
 </div>
 ---
 <br>
@@ -39,16 +39,16 @@ You can see the below icons in Outlook in any empty folders you have laying arou
 You can see the below icons in Outlook whenever you haven't got an email selected, in the reading pane on the right.
 This one particularly annoys me, because the left and rightmost edges do not line up properly with the below segments they touch. They're off by some subpixel amount which is just painful.
 <div>
-<image src="/assets/images/microsoft_icons/no-mail-selected-dark-v2.svg" width="360" height="360"></image>
-<image src="/assets/images/microsoft_icons/no-mail-selected-light-v2.svg" width="360" height="360"></image>
+<image src="/assets/images/microsoft_icons/outlook_no-mail-selected-dark-v2.svg" width="360" height="360"></image>
+<image src="/assets/images/microsoft_icons/outlook_no-mail-selected-light-v2.svg" width="360" height="360"></image>
 </div>
 ---
 <br>
 
 You can see the below icons in Outlook within the calendar tab. It only appears if you don't have anything planned for the day. Suspicious... those dots seem to have grown in size.
 <div>
-  <image src="/assets/images/microsoft_icons/empty-calendar-dark-v1.svg" width="360" height="360"></image>
-  <image src="/assets/images/microsoft_icons/empty-calendar-light-v1.svg" width="360" height="360"></image>
+  <image src="/assets/images/microsoft_icons/outlook_empty-calendar-dark-v1.svg" width="360" height="360"></image>
+  <image src="/assets/images/microsoft_icons/outlook_empty-calendar-light-v1.svg" width="360" height="360"></image>
 </div>
 
 ## The bad
@@ -56,38 +56,38 @@ The **dots** we saw in the 'empty folder' icons seem to be an ailment that Micro
 
 Let's start with the envelopes. Here we begin the spread of contagion. These icons are the reason I'm making this blog post. Whoever began the pandemic must have sneezed on their priority mail, infecting one of the magnificent 7, attempting to bring down an empire.
 <div>
-<image src="/assets/images/microsoft_icons/no-mail-selected-dark-v1.svg" width="360" height="360"></image>
-<image src="/assets/images/microsoft_icons/no-mail-selected-light-v1.svg" width="360" height="360"></image>
+<image src="/assets/images/microsoft_icons/outlook_no-mail-selected-dark-v1.svg" width="360" height="360"></image>
+<image src="/assets/images/microsoft_icons/outlook_no-mail-selected-light-v1.svg" width="360" height="360"></image>
 </div>
 ---
 <br>
 
 Microsoft realised that they had been sent a pathogen, and attempted to dispose of the threat.
 <div>
-  <image src="/assets/images/microsoft_icons/empty-deleted-dark-v1.svg" width="360" height="360"></image>
-  <image src="/assets/images/microsoft_icons/empty-deleted-light-v1.svg" width="360" height="360"></image>
+  <image src="/assets/images/microsoft_icons/outlook_empty-deleted-dark-v1.svg" width="360" height="360"></image>
+  <image src="/assets/images/microsoft_icons/outlook_empty-deleted-light-v1.svg" width="360" height="360"></image>
 </div>
 ---
 <br>
 
 The strain travelled throughout Microsoft, they had not managed to dispose of it in time. It was the beginning of the end.
 <div>
-<image src="/assets/images/microsoft_icons/lightbulb.svg" width="360" height="360" style="display: block; margin-left: auto; margin-right: auto; width: 50%"></image>
+<image src="/assets/images/microsoft_icons/outlook_lightbulb.svg" width="360" height="360" style="display: block; margin-left: auto; margin-right: auto; width: 50%"></image>
 </div>
 ---
 <br>
 
 The strain reached the compression service. All the companies icons have been distorted and pixellated. Workflows are slowing to a crawl.
 <div>
-<image src="/assets/images/microsoft_icons/no-quick-steps-dark-v1.png" width="360" height="360"></image>
-<image src="/assets/images/microsoft_icons/no-quick-steps-light-v1.png" width="360" height="360"></image>
+<image src="/assets/images/microsoft_icons/outlook_no-quick-steps-dark-v1.png" width="360" height="360"></image>
+<image src="/assets/images/microsoft_icons/outlook_no-quick-steps-light-v1.png" width="360" height="360"></image>
 </div>
 ---
 <br>
 
 It's too late... The vital organs have been compromised. All that's left now is the end, however ugly it may be.
 <div>
-<image src="/assets/images/microsoft_icons/empty_favorites.png" width="360" height="360" style="display: block; margin-left: auto; margin-right: auto; width: 50%"></image>
+<image src="/assets/images/microsoft_icons/outlook_empty_favorites.png" width="360" height="360" style="display: block; margin-left: auto; margin-right: auto; width: 50%"></image>
 </div>
 
 ## The ugly
@@ -95,13 +95,13 @@ Not much to talk about here, Microsoft has a lot of art across their various Off
 
 These note icons are also in Outlook, inside the Notes tab (if you haven't made any before). This image isn't incorporated into the webpage in the same manner that the other images have, leading me to believe that the whole notes folder has just been tacked on in some god awful way.
 <div>
-<image src="/assets/images/microsoft_icons/no-notes-dark-v1.svg" width="360" height="360"></image>
-<image src="/assets/images/microsoft_icons/no-notes-light-v1.svg" width="360" height="360"></image>
+<image src="/assets/images/microsoft_icons/outlook_no-notes-dark-v1.svg" width="360" height="360"></image>
+<image src="/assets/images/microsoft_icons/outlook_no-notes-light-v1.svg" width="360" height="360"></image>
 </div>
 ---
 <br>
 
 For some reason, this image is still the one used on the [Azure IPAM][ipam] page. At least this icon has some soul compared to the other meaningless garbage they've spewed around the place, but I don't get why it headlines the webpage. It could just have easily been empty space.
-<image src="/assets/images/microsoft_icons/ipam-logo.png"></image>
+<image src="/assets/images/microsoft_icons/outlook_ipam-logo.png"></image>
 
 [ipam]: https://azure.github.io/ipam/#/

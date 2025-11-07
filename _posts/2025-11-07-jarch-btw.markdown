@@ -1,0 +1,83 @@
+---
+layout: post
+title: "J-Arch, BTW"
+date: 2025-11-07 10:45:47 +08:00
+categories: tutorial linux os arch
+published: false
+---
+
+# Love Thy Stack
+I recently saw that [DHH](https://dhh.dk/) has released is own operating system distribution, called [Omarchy](https://omarchy.org/). The asthetics of the distribution are great, and it's based on [Arch Linux](https://archlinux.org/), so there's a lot of configurability/extensibility right there.
+
+I gave it a download, installed the .iso inside of a VM, and took note of my first impressions:
+1. It installs really fast. I genuinely was not expecting such a fast install.
+2. The keybinds suck for me. I use one of those kinesis ergonomic keyboards ([this one](https://kinesis-ergo.com/shop/adv360/)). This isn't that big a problem, since I can just rebind them though.
+3. There's way too much software to start with. This one does annoy me a little bit, because I don't think I need 6.4 GB worth of software to do everyday tasks.
+
+Anyway, those initial impressions made me think: If DHH did this himself (for the most part), does that mean that I can reasonably do it myself? At the very least, I'd like to know what the process of creating a custom distribution (using standard Arch Linux tooling) is like. It may give me some deeper understanding of software distribution, or at the very least it will give me a nice distro that suits my requirements. I'm not going to try and suit every usecase like Omarchy does, since my distro is expected to host a whopping **1** user.
+
+Without further ado, let's get into building a distro!
+
+# J-Arch
+I'm calling the distribution J-Arch, since I lack creativity, imagination and flair. First steps:
+1. Install arch in a VM, however you want to,
+2. Install [archiso](https://wiki.archlinux.org/title/Archiso), a tool for creating arch linux .iso files,
+3. Have the [Omarchy GitHub](https://github.com/basecamp/omarchy) handy, since we'll refer to it often,
+4. Have the [omarchy-iso GitHub](https://github.com/omacom-io/omarchy-iso) handy, since we'll refer to it often.
+
+## Getting started
+We'll need to create two repositories. One for our OS-custom configuration scripts, and another one to create the ISO (in the exact same manner that Omarchy have done it). I've simply called them j-arch and j-arch-iso, respectively.
+
+For the j-arch-iso repository, we'll want the following directory structure:
+
+j-arch-iso
+├─archiso (submodule)
+├─bin
+│ ├jarch-<tool>
+│ └...
+├─builder
+│ ├archinstall.packages
+│ └build-iso.sh
+└─configs
+  ├airootfs
+  │ ├etc
+  │ │ ├mkinitcpio.conf.d
+  │ │ │ └archiso.conf
+  │ │ ├mkinitcpio.d
+  │ │ │ └linux.preset
+  │ │ └plymouth
+  │ │   └plymouthd.conf
+  │ └root
+  │   ├.automated_script.sh
+  │   └configurator
+  ├efiboot
+  │ └loader
+  │   ├entries
+  │   │ └01-archiso-linux.conf
+  │   └loader.conf
+  ├grub
+  │ ├grub.cfg
+  │ └loopback.cfg
+  ├pacman.conf
+  ├pacman-online.conf
+  ├profiledef.sh
+  └syslinux
+    ├archiso_head.cfg
+    ├archiso_pxe-linux.cfg
+    ├archiso_pxe.cfg
+    ├archiso_sys-linux.cfg
+    ├archiso_sys.cfg
+    ├archiso_tail.cfg
+    └syslinux.cfg
+
+Everything underneath the `configs/` directory is pretty standard `archiso` boilerplate, with the exception of the files inside of `airootfs/root`, those allow more of a custom setup to be performed.
+
+Inside the `configurator`, within airootfs, we create our `user_configuration.json`, as well as our `user_credentials.json`, which are used by archinstall to non-interactively run the installer. Of course, we generate these JSON files with some custom interactive prompts we run.
+
+### plymouth
+Plymouth allows nice graphics to show up during the boot process. You can use splash screens with nice spinners showing boot progress. Highly recommended!
+
+We create our own custom plymouth theme called **jarch**.
+
+### gum
+Gum is a tool written in Go which lets you make pretty, interactive shell scripts. It's quite sleek. It's not a small package, coming in at 13.31MiB at v0.17.0-1, but that's a small price to pay for the niceties it provides. I think I'm going to use this one down the track.

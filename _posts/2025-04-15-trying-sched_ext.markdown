@@ -88,3 +88,46 @@ virt-sparsify --in-place rocky9.qcow2
 TMPDIR="$(realpath ./tmp)" virt-sparsify --compress rocky9.qcow2 rocky9-compressed.qcow2
 ```
 You now have a QCOW2 disk ready to go for sched_ext stuff.
+
+# Testing sched_ext
+There happens to be an example of sched_ext in the linux source. Let's go back to our VM.
+```bash
+cd linux-6.14.2/tools/sched_ext
+# Unfortunately, BPF still requires clang at the moment
+dnf -y install clang
+make -j$(nproc)
+python3 -m ensurepip
+python3 -m pip install drgn
+./build/bin/scx_simple
+```
+We've just built and run a sched_ext program. We've literally just replaced Linux's Completely Fair Scheduler with a custom variant. It's pretty amazing if you think about it. All the processes were migrated from one CPU scheduler to another at runtime, and we can see it actively working.
+
+## Getting the phoronix test suite
+wget from a VM without a clipboard or desktop environment can be kind of annoying, so let's go through a simple way of moving data from the host to a VM, without a shared directory.
+
+Let's test it with the Phoronix test suite (a benchmarking tool)
+```bash
+virsh shutdown rocky9
+wget https://github.com/phoronix-test-suite/phoronix-test-suite/releases/download/v10.8.4/phoronix-test-suite-10.8.4.tar.gz
+
+# Copies the file into /root inside the VM
+virt-copy-in -d rocky9 ./phoronix-test-suite-10.8.4.tar.gz /root
+virsh start rocky9
+```
+Easy, right?
+
+Now in the VM we can just dnf install the rest of the packages we need.
+```bash
+dnf -y install php-cli php-xml php-json zip
+tar -xf ./phoronix-test-suite-10.8.4.tar.gz
+cd phoronix-test-suite
+./install-sh
+```
+This should give you access to the `phoronix-test-suite` command
+
+## Running a benchmark
+Let's do the FFTW benchmark, that one's always fun.
+```bash
+phoronix-test-suite run pts/fftw
+# Say yes to the install
+```

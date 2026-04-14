@@ -81,3 +81,28 @@ df -h
 # /dev/mapper/ArchinstallVg-root   39G   15G    24G  39%  /
 ```
 And voila.
+
+# Shrinking (shrinkwrapping) a QCOW2
+Note that I'm doing this with a rocky10 VM, so I'll mention multiple ways to handle shrinking.
+
+Firstly, in the **guest**, clear unused space on the disk:
+```bash
+fstrim -av
+```
+OR (if fstrim isn't available)
+```bash
+dd if=/dev/zero of=/tempfile
+rm -f /tempfile
+```
+
+Then shutdown the guest and make a backup of the disk
+```bash
+cp old.qcow2 old.qcow2.bkp
+```
+
+Finally shrink the disk
+```bash
+qemu-img convert -O qcow2 old.qcow2 new.qcow2
+```
+
+That's it!

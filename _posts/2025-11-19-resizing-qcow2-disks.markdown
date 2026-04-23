@@ -67,6 +67,26 @@ pvdisplay -m
 # Always end with an fs check
 btrfsck /dev/ArchinstallVg/root
 ```
+OR, if you aren't using a crypt-disk
+```bash
+# review the old PV size
+pvdisplay -m
+# Physical extent 0 to 4859:
+#   Logical volume    /dev/ArchinstallVg/root
+pvresize /dev/sda3
+# review the free Physical extents
+pvdisplay -m
+# Physical extent 4859 to 9978:
+#   FREE
+
+# Extend the LV
+# You can determine the name of the lv with *vgs*, *pvs* and *lvs*
+lvextend /dev/mapper/rl-root /dev/sda3
+pvdisplay -m
+# Physical extent 0 to 9978:
+#   Logical volume    /dev/ArchinstallVg/root
+```
+
 Finally, boot into your existing OS.
 ```bash
 # Check current file system size
@@ -75,6 +95,25 @@ df -h
 # /dev/mapper/ArchinstallVg-root   19G   15G     4G  79%  /
 # Resize btrfs (as root)
 btrfs filesystem resize max /
+# Check file system size
+df -h
+# Filesystem                      Size  Used  Avail Use%  Mounted on
+# /dev/mapper/ArchinstallVg-root   39G   15G    24G  39%  /
+```
+Or, with xfs:
+```bash
+df -h
+# Filesystem                      Size  Used  Avail Use%  Mounted on
+# /dev/mapper/ArchinstallVg-root   19G   15G     4G  79%  /
+
+# determine your filesystem
+lsblk -f
+# OR
+blkid -o list
+
+# Grow the filesystem size to fill the available space
+xfs_growfs /dev/sda3
+
 # Check file system size
 df -h
 # Filesystem                      Size  Used  Avail Use%  Mounted on

@@ -7,27 +7,31 @@ published: true
 ---
 The more I use computers, the more I wish to swear off the scourge that is the internet as a whole, even though I use it every day and enjoy the access to limitless information and video/music streaming. Now that I think about it, I just want the good parts without all the bad parts, is that so much to ask for? This thought process is probably just a side-effect of using Linux and having access to manpages, of which I spend a lot of time reading because I enjoy understanding how all the code on my system operates and interoperates. 
 
-To firmly refocus on the title of this post, I'd like to look at ANSI escape codes, such as '\e[0;33m' and '\e[0m'. If anyone's tried to colour the text in their terminal before, these codes should be fairly familiar: make the foreground text yellow and reset the text to default, respectively. \e is sometimes written as ^[, which is a more raw way of representing the escape key, but can cause problems with text editors and formatting, so I would stick to the `readline` way of writing it with \e.
+I want to look at ANSI escape codes, such as `\e[33m` and `\e[0m`. If anyone's tried to colour the text in their terminal before, these codes should be fairly familiar: make the foreground text yellow and reset the text to default, respectively. `\e` is sometimes written as `^[`, which is a more raw way of representing the escape key, but can cause problems with text editors and formatting, so I would stick to the `readline` way of writing it with `\e`.
 
-My question today is: if I didn't have any internet, how would I work out how to write these sequences in my scripts? This question isn't as easy as you'd expect and it requires some understaning of what a terminal is, how different terminals are configured, and how to read. Let's start at the beginning, shall we:
+My question today is: if I didn't have any internet, how would I work out how to write these sequences in my scripts? This question isn't as easy as you'd expect and it requires some understanding of what a terminal is, how different terminals are configured, and how to read. Let's start at the beginning.
 
 # What the _f&$#_ is a ~kilometre~ terminal?
 A terminal is an interface between a user and a computer, allowing for input by the user and output by the computer to occur in a single place. Terminals originally didn't even have a screen connected to them. They instead looked like typewriters, and actually used paper as the interface between user and computer. These terminals were so slow that punch cards were actually the preferred medium for programming for some time. They were serial devices with baud rates around 75, and could handle 10-30 characters per second.
 
-Eventually, Video Display Units were good enough that terminals began to supersede the use of punch cards, but these were still serial devices and physically existed (more on that later). They had CRT screens, and became the basis of text interaction with an operating system shell that we still use today. It was also around this time that ANSI escape sequences were added to terminals, like the VT100, and became a mainstay of terminal environments.
+Eventually, Video Display Units were good enough that terminals began to supersede the use of punch cards, but these were still serial devices with physical hardware (more on that later). They had CRT screens, and became the basis of text interaction with an operating system shell that we still use today. It was also around this time that ANSI escape sequences were added to terminals, like the VT100, and became a mainstay of terminal environments. You'll hear about the VT100 family of terminals quite often if you decide to delve into terminals yourself.
 
-These days, dedicated terminals aren't really used anymore. Instead of teletype (tty) devices, pseudo-teletypes (pty) devices are used, which are software emulated terminals. This is the reason you'll hear many programs refer to terminals as "terminal emulators", because they don't physically exist, and they were probably around when they did, so the distinction still matters. The capabilities of old, physical ttys were just what was built into the device. We now have something called the `termcap database`, which defines which **term**inal **cap**abilies are available for a terminal emulator. This is how terminal emulators are configured.
+These days, dedicated terminals aren't really used anymore. Instead of teletype (tty) devices, pseudo-teletypes (pty) are used, which are software emulated terminals. This is the reason you'll hear many programs refer to terminals as "terminal emulators"; they're software emulated, and the programmer was likely alive when physical terminals were popular, so the distinction mattered at the time. The capabilities (functionality) of these old ttys had to be built into them, whereas modern ptys can have functionality *coded* into them. We now have something called the `termcap database`, which lists which **term**inal **cap**abilities are available in different terminal emulators.
+
+A terminal capability is simply some functionality that the terminal has. We'll cover some of these capabilities below, but to provide some context, it refers to things such as:
+- Setting the text foreground/background colour
+- Moving the cursor around the screen
 
 Note that termcap is actually a deprecated way of storing terminal capability information, and it now uses `terminfo`-style codes instead. From what I can tell, termcap was limited to two-digit alphanumeric codes for storing capabilities, meaning that they probably were running out of codes, and also the codes weren't particularly readable, nor did they correspond to their functionality particularly well.
 
+Before moving on, I want to touch on the use of the word console vs terminal vs terminal emulator vs virtual console. As far as I can tell, a **terminal** and a **console** are equivalent, and a **virtual console** is equivalent to a **terminal emulator**. In the wild, you're likely to hear that a console is a physical terminal, although a terminal is already a physical terminal, so I'm pretty sure that people are just getting their wires crossed. Either way, I'd say **console** and **terminal emulator** so that everyone knows what you're talking about, although I'm sure there will still be some misunderstandings.
+
 # Configuring a terminal emulator
-Let's begin with a little exercise. We're going to print out the terminal capabilities for the current terminal on our system. Open up a shell, and begin by echoing out the `$TERM` environment variable:
+By default, the `infocmp` command will use the `$TERM` environment variable to look up the capabilities of your terminal emulator using the default terminfo path at `/usr/share/terminfo/`. If the name of another terminfo file is provided to `infocmp`, it will instead look up that entry instead. Let's try it now:
 ```bash
 echo $TERM
 # linux
-```
-By default, the `infocmp` command will use this environment variable to look up the capabilities of your terminal emulator using the default terminfo path at `/usr/share/terminfo/`. Let's try it now:
-```bash
+
 infocmp
 #   Reconstructed via infocmp from file: /usr/share/terminfo/l/linux
 # linux|Linux console,
@@ -45,26 +49,36 @@ infocmp xterm-256color
 # xterm-256color|xterm with 256 colors,
 #   ...
 ```
-If you've followed along, you can see that there are differences between all these files, and if you tested the output of the 'linux' terminfo database, you'd see that the built-in Linux console doesn't have all that many capabilities compared to these other emulators. Funny enough, I'm on KDE Neon whilst writing this and the konsole terminal emulator is actually using the `xterm-256color` capabilities, so I'm not sure what's going on there.
+If you're following along, you can see that there are differences between all these files and that the built-in Linux console doesn't have all that many capabilities compared to the other emulators. I'm on KDE Neon whilst writing this and the konsole terminal emulator is actually using the `xterm-256color` capabilities, so I'm not sure what's going on there; likely a compatibility decision.
 
 ## Parameterised Strings
-I would personally read this from the `man terminfo` page (search for the `Parameterized Strings` section), but I still want to cover it here since it might be somewhat confusing. Some capabilities can take a range of inputs, where specific types are required. Therefore we construct a printf-style format string (which utilises a stack under the hood) to define what the format of our input should look like. 
+I would personally read this from the `terminfo.5` manual page (search for the `Parameterized Strings` section), but I still want to cover it here since it might be somewhat confusing. 
+
+There are three kinds of capabilities:
+- boolean capabilities: Either present or not
+- Numeric capabilities: A "#" follows the capability name, followed by an integer value
+- String capabilities: A "=" follows the capability name, followed by a string of characters making up the capability value. These strings can be verbatim, or allow custom values to be supplied, too. Custom value string capabilities are also known as Parameterised Strings.
+
+Parameterised strings look similar to a printf-style format string. They use a stack under the hood which allows them to perform some complex logic like if-else statements. The parameter processing can change arbitrarily depending on inputs, which we'll see when looking at colours later on.
 
 Let's look at the "set_a_foreground" (setaf) terminfo capability for an example of a parameterised string.
 ```bash
 infocmp linux | grep setaf
-#    setaf=\E[3%p1%dm
 ```
-To go over this format specifier, `\E[3%p1%dm`, we'll split it into it's constituent parts, and explain each one, with reference to the `terminfo(5)` manual page (**Parameterized Strings** subheading). The first part is '\E[3', these are all literal characters, the escape key, left bracket and the literal digit '3'. '%p1' means we push the first argument onto the stack, and '%d' prints out the argument as an integer. 'm' is a literal m character.
+Outputs
+```
+setaf=\E[3%p1%dm
+```
+To go over this format specifier, `\E[3%p1%dm`, we'll split it into it's constituent parts, and explain each one, with reference to the `terminfo.5` manual page (**Parameterized Strings** subheading). The first part is `\E[3`, these are all literal characters, the escape key, left bracket and the literal digit 3. `%p1` means we push the first argument onto the stack, and `%d` prints out the argument as an integer. It ends with a literal 'm' character.
 
-With all this in mind, we could reasonably assume what the inputs to setaf look like now. The block below shows what happens when we guess the input values for '%p1':
+With all this in mind, we could reasonably assume what a valid setaf input looks like. The block below shows what happens when we guess the input values for `%p1`:
 ```bash
 for ((i=0;i<10;i++)); do
   printf "\e[3${i}m"
   printf "Testing what the previous input did\n"
 done
 ```
-Assuming you're using the linux terminal emulator, you'll see 8 different text colours printed: black, red, green, yellow (orange), blue, magenta, cyan and white, followed by 2 more repeats of white at the end. This is because those eight colours are portably defined for all UNIX-like terminal emulator, although some will offer more colours, which we will get to later.
+Assuming you're using the linux terminal emulator, you'll see 8 different text colours printed: black, red, green, yellow (orange), blue, magenta, cyan and white, followed by 2 more repeats of white at the end. This is because those eight colours are portably defined in the ECMA-48 standard (described in the next section), although some terminal emulators offer more colours, which we will get to later.
 
 ## An aside about Control Sequences
 *Parameterised Strings continues in the next section below*  
@@ -87,13 +101,13 @@ Together with the Final Byte F, they identify the control function;
 > 
 > F is the Final Byte; it consists of a bit combination from 04/00 to 07/14; it terminates the control sequence and together with the Intermediate Bytes, if present, identifies the control function. Bit combinations 07/00 to 07/14 are available as Final Bytes of control sequences for private (or experimental) use.
 
-Let's break this down a bit. The *ab/cd* sequences above are hexadecimal numbers to represent bit sequences. If we start with the CSI, then we have 1B 5B, which on an [ascii table](https://www.ascii-code.com/), translates to 'ESC['. Wonderful, that's exactly how our command started up above. 
+Let's break this down a bit. The *ab/cd* sequences above are hexadecimal numbers to represent bit sequences. If we start with the CSI, then we have 1B 5B, which translates to `ESC[` on an [ascii table](https://www.ascii-code.com/). Wonderful, that's exactly how our command started up above. 
 
-Let's move on to parameter bytes. **P** can be anything from 30 to 3F, which includes: `0-9:;<=>?`. Again, great, our command uses a '3' as our first parameter byte, and another (arbitrary) integer as our next parameter byte.
+Let's move on to Parameter Bytes. **P** can be anything from 30 to 3F, which includes: `0-9:;<=>?`. Again, great, our command uses a '3' as our first parameter byte, and another (arbitrary) integer as our next parameter byte.
 
-Now for intermediate bytes. **I** can be anything from 20 to 2F, which includes: `SP!"#$%&'()*+,-./`, where SP is the space character and '-' is a literal hyphen. We don't seem to have that in our string, but the standard is quite insistent on the "if present" wording, so let's assume that our control sequence didn't need an intermediate byte.
+Now for Intermediate Bytes. **I** can be anything from 20 to 2F, which includes: `SP!"#$%&'()*+,-./`, where SP is the space character and '-' is a literal hyphen. We don't seem to have that in our string, but the standard is quite insistent on the "if present" wording, so let's assume that our control sequence didn't need an Intermediate Byte.
 
-Let's look at the final byte. **F** can be anything from 40 to 7E, which includes: ``@A-Z[\]^_`a-z{|}~``. Great, our string ended with an 'm'. That means that we can identify the control function that we're calling from just the character 'm'. Thankfully, in the standard, table 3 in section 5.4 provides us the answer:
+Let's look at the Final Byte. **F** can be anything from 40 to 7E, which includes: ``@A-Z[\]^_`a-z{|}~``. Great, our string ended with an 'm', meaning we can identify the control function we're calling from the ascii value of 'm' - 6D or 06/13 in ECMA-speak. Thankfully, in the standard, table 3 in section 5.4 provides us the answer:
 <table style="text-align: center">
   <thead>
     <tr>
@@ -208,7 +222,7 @@ Let's look at the final byte. **F** can be anything from 40 to 7E, which include
   </tbody>
 </table>
 
-Looking up 'm' on the aforementioned ascii table, we get the hexadecimal '6D', or 06/13 in ECMA-speak, corresponding to the control function SGR. When we look up SGR, we should see a sequence that looks like '\E[3<color>m' at some point.
+'m' corresponds the SGR control function. This should be the key to explaining the `\E[3m` sequence from earlier.
 
 ### Select Graphic Rendition
 Looking up SGR in the standard, we are shown section **8.3.117 SGR - SELECT GRAPHIC RENDITION**.
@@ -254,33 +268,41 @@ Looking up SGR in the standard, we are shown section **8.3.117 SGR - SELECT GRAP
 > 52 encircled  
 > 53 overlined  
 
-Let's start with the "Representation" defined above for SGR. The representation of every SGR command follows the format: CSI Ps.. 06/13, which perfectly matches the format of our earlier command, assuming that a Ps.. of 31 gives us red text, which it does. Note that even though all these different parameters are defined, they need to be supported by the terminal emulator and defined inside of the terminfo database to be accessible by an end user. Thankfully, text foreground colours and bold font are fairly universal.
+Let's start with the "Representation" defined above for SGR. The representation of every SGR command follows the format: `CSI Ps.. 06/13`, which perfectly matches the format of our earlier command, assuming that a `Ps..` of 31 gives us red text, which it does. Note that even though all these different parameters are defined, they need to be supported by the terminal emulator to be accessible by an end user. Thankfully, text foreground colours and bold font are fairly universal, although the range of available colours often differs drastically between different terminal emulators.
+
+Old terminal emulators often only support 8 colours, whereas newer ones support an additional 8 colours, which are similar to the original 8 (think maroon vs red). Modern terminals almost always support 256 colours, and some terminals even have the `$COLORTERM=truecolor` variable set, telling applications that the terminal supports the full range of 16.7 million RGB colours, providing rich colour support.
 
 ## Parameterised Strings, continued
 Now that we understand parameterised strings somewhat well, we can look at a harder example with conditional logic:
 ```bash
 infocmp xterm-256color | grep setaf
-# setaf=\E[%?%p1%{8}%<%t3%p1%d%e%p1%{16}%<%t9%p1%{8}%-%d%e38;5;%p1%d%
+```
+Outputs
+```
+setaf=\E[%?%p1%{8}%<%t3%p1%d%e%p1%{16}%<%t9%p1%{8}%-%d%e38;5;%p1%d%
 ```
 That's probably too hard to read, thankfully `infocmp` has some niceties for formatting entries that look exactly like setaf:
 
 ```bash
 infocmp xterm-256color -f | grep setaf -A12
-# setaf=\E[
-#         %?
-#                 %p1%{8}%<
-#                 %t3
-#                 %p1%d
-#         %e
-#                 %p1%{16}%<
-#                 %t9
-#                 %p1%{8}%-%d
-#         %e38;5;
-#                 %p1%d
-#         %;
-#         m,
 ```
-The -f flag shows us conditionals inside these parameterised strings. This one here actually isn't hard to read so we'll go through it quickly. The first block checks if our digit is less than 8. If it is, then we expect the start sequence to be '\E[3<0-7>m'. The second block checks if our digit is less than 16. If it is, then we expect our sequence to be from 9-15, but we subtract 8 before printing out, leaving us with the format '\E[9<0-7>m'. In the final block, which triggers in all other cases, the format is '\E[38;5;<0->m'. Note that in reality, the final block wraps around at 256, i.e. there are only 2^8 different colours available (hence xterm-256color).
+Now outputs
+```
+setaf=\E[
+        %?
+                %p1%{8}%<
+                %t3
+                %p1%d
+        %e
+                %p1%{16}%<
+                %t9
+                %p1%{8}%-%d
+        %e38;5;
+                %p1%d
+        %;
+        m,
+```
+The -f flag shows us conditionals inside these parameterised strings. This one here actually isn't hard to read so we'll go through it quickly. The first block checks if our digit is less than 8. If it is, then we expect the start sequence to be `\E[3<0-7>m`. The second block checks if our digit is less than 16. If it is, then we expect our sequence to be from 9-15, but we subtract 8 before printing out, leaving us with the format `\E[9<0-7>m`. In the final block, which triggers in all other cases, the format is `\E[38;5;<0->m`. Note that in reality, the final block wraps around at 256, i.e. there are only 2^8 different colours available (hence xterm-256color).
 
 Note that when we want to input these sequences manually, we have to take into account the processing that's happening in the terminfo database to print out the correct values. The code block below explains this with comments and examples:
 ```bash
@@ -317,18 +339,18 @@ for ((i=0;i<16;i++)); do
   done
   printf "\n"
 done
-
-# Hopefully you noticed how much slower it is to make a call to 'tput' for every
-# single word that you want to write, instead of a call to printf by itself.
-# This is the cost of subprocess spawning.
-
-# I'm unsure why the if-else exists, as the first 16 of the \e[38;5; sequence are the
-# same as the colours present in the \e[3 and \e[9 sequences. Likely some kind of
-# compatibility, but I digress.
 ```
 
+Hopefully you noticed how much slower it is to make a call to 'tput' for every
+single word that you want to write, instead of a call to printf by itself.
+This is due to the cost of subprocess spawning. 
+
+I'm unsure why the if-else is needed, as the first 16 of the `\e[38;5;` sequences are the
+same as the colours present in the `\e[3` and `\e[9` sequences. Likely some kind of
+compatibility decision, but I digress.
+
 ## A look at capabilities
-I thought it would be fun to have a look at, the default capabilities in the Linux terminal emulator. Here's a listing of some important ones:
+I thought it would be fun to have a look at the default capabilities in the Linux terminal emulator. Here's a listing of some important ones:
 - am (auto-margin): automatically inserts newline at the end of a line (e.g. line wrap).
 - smam/rmam: enable/disable auto-margin.
 - bce: erase the screen with the current background colour. For example, vim with a colourscheme needs this, assuming the colourscheme background is different to the system default
@@ -346,9 +368,9 @@ I thought it would be fun to have a look at, the default capabilities in the Lin
 - setaf: Set foreground color to #1, using ANSI escape
 
 ## The Linux Virtual Console
-The Linux virtual console is implemented primarily in the [vt.c file](https://github.com/torvalds/linux/blob/master/drivers/tty/vt/vt.c) in the Linux source tree. Another struct, called `vc_data` in [console_struct.h](https://github.com/torvalds/linux/blob/master/include/linux/console_struct.h#L120) contains an integer flag `vc_decawm` which sets autowrap mode (a.k.a am).
+The Linux virtual console is implemented primarily in the [vt.c file](https://github.com/torvalds/linux/blob/master/drivers/tty/vt/vt.c) in the Linux source tree. Another struct, called `vc_data` in [console_struct.h](https://github.com/torvalds/linux/blob/master/include/linux/console_struct.h#L120) contains an integer flag `vc_decawm` which sets autowrap mode (a.k.a am in terminfo).
 
-Back in `vt.c`, we can see some familiar functionality in the driver code, such as generating rgb colours in `rgb_from_256`, resetting the terminal to normal settings in `reset_terminal`, and handling the SGR control function in `csi_m` (including the enum above the function with all the corresponding control codes!).
+Back in `vt.c`, we can see some familiar functionality in the driver code, such as generating rgb colours in `rgb_from_256`, resetting the terminal to normal settings in `reset_terminal`, and handling the SGR control function in `csi_m` (including the enum above the function with all the corresponding control codes).
 
 The code block below shows the three places that auto-wrapping is used. The first two show how the value can be set, and the final function shows how the value is used to adjust the wrapping behaviour in write mode.
 ```c
@@ -393,9 +415,9 @@ static int vc_con_write_normal(struct vc_data *vc, int tc, int c,
 }
 ```
 
-The above code makes no reference to termcap or terminfo, but follows the conventions put forth for valid keybinds. As a result, the terminfo database really has no bearing on what the terminal emulator actually supports/does, unless it is maintained, and updated as new features are added or binds are changed. For example, The key combination "\ec" causes the terminal to clear for the virtual console, but this is only mentioned underneath the `rs1` entry in infocmp. 
+The above code makes no reference to termcap or terminfo, but follows the conventions put forth for valid keybinds. As a result, the terminfo database really has no bearing on what the terminal emulator actually supports/does, unless it is maintained and updated as new features are added and capabilities are changed. For example, The key combination `\ec` causes the terminal to clear for the virtual console, but this is only mentioned underneath the `rs1` entry in infocmp. 
 
-Also, note that "\ec" is defined in ECMA-48 below:
+Also, note that `\ec` is defined in ECMA-48 below:
 > RIS - RESET TO INITIAL STATE  
 Notation: (Fs)  
 Representation: ESC 06/03  
@@ -405,13 +427,15 @@ Representation: ESC 06/03
 Let's look into `rs1` to see what's happening:
 ```bash
 infocmp linux -1 | grep rs1
-#   rs1=\Ec\E]R
-
-# We know that \Ec is RIS.
-# So what's \E]R?
+```
+Outputs
+```
+rs1=\Ec\E]R
 ```
 
-It turns out that "\E]R" is undefined, as in it's operating system dependent. Here's the relevant ECMA-48 entry and the corresponding code in the Linux source that decides the functionality:
+We know that `\Ec` is RIS. So what's `\E]R`?
+
+It turns out that `\E]R` is undefined, as in it's operating system dependent. Only the `\E]` sequence is defined in ECMA-48, the R is chosen somewhere in the driver source code within the Linux source. Below is the relevant ECMA-48 entry and the corresponding code in the Linux source that decides the functionality:
 
 > OSC - OPERATING SYSTEM COMMAND  
 Notation: (C1)  
@@ -480,6 +504,4 @@ void reset_palette(struct vc_data *vc)
 That's enough of that. It's pretty clear at this point that we're looking at decades of decisions that have led to the architecture of terminals, virtual or otherwise, as they are today. It all makes a lot of sense when you zoom out like this, but trying to make sense of it at a high level can lead to a great deal of confusion when you want to *understand* why certain codes do certain things. Time to wrap up.
 
 # To conclude
-To reiterate my original question, if I didn't have any internet, how would I work out how to write these sequences in my scripts? I think I have an answer now, although it isn't that straight forward. First of all, `infocmp` is your best friend, and the terminfo database at `/usr/share/terminfo/` is a good friend. If you have the `tput` command available, which most systems do, then you can easily toggle terminal capabilities using this command. Otherwise, you'll need to read the parameterised strings in the terminfo database with help from the `terminfo(5) man page`. Otherwise, there isn't much more to it. I wouldn't called any of this tribal knowledge, but it's not immediately apparent how terminal emulators work.
-
-I'm not proofreading this, I'm finished writing about it.
+To reiterate my original question, if I didn't have any internet, how would I work out how to write these sequences in my scripts? I think I have an answer now, although it isn't that straight forward. First of all, `infocmp` is your best friend, and the terminfo database at `/usr/share/terminfo/` is a good friend. If you have the `tput` command available, which most systems do, then you can easily toggle terminal capabilities using this command. Otherwise, you'll need to read the parameterised strings in the terminfo database with help from the `terminfo.5` manual page. Otherwise, there isn't much more to it. I wouldn't call any of this tribal knowledge, since I was able to research it online, but it's not immediately apparent how terminal emulators work.
